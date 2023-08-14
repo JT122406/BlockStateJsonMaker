@@ -13,8 +13,10 @@ fun main() {
     val folder = File(folderPath)
 
     // Create a new folder for the JSON files
-    val jsonFolder = File(folder, "json")
-    if (!jsonFolder.exists()) jsonFolder.mkdir()
+    val itemjsonFolder = File(folder, "Item_model_jsons")
+    val blockStateFolder = File(folder, "Blockstate_jsons")
+    if (!itemjsonFolder.exists()) itemjsonFolder.mkdir()
+    if (!blockStateFolder.exists()) blockStateFolder.mkdir()
     
 
     // Get the list of PNG files in the folder
@@ -23,23 +25,44 @@ fun main() {
     if (pngFiles != null)
         for (pngFile in pngFiles) {
             val fileName = pngFile.nameWithoutExtension
-            val jsonFile = File(jsonFolder, "$fileName.json")
 
             // Create the JSON content
-            val jsonContent = """
+            var jsonContent = """
                 {
-                  "variants": {
-                    "": {
-                      "model": "$modId:block/$fileName"
-                    }
-                  }
+                  "parent": "${modId}:block/${fileName}"
                 }
             """.trimIndent()
 
             // Write the JSON content to the file
-            jsonFile.writeText(jsonContent)
+            File(itemjsonFolder, "$fileName.json").writeText(jsonContent)
 
-            println("Created JSON file: ${jsonFile.absolutePath}")
+            jsonContent = """
+            {
+                "variants": {
+                    "facing=north": {
+                      "model": "${modId}:block/${fileName}"
+                    },
+                    "facing=east": {
+                      "model": "${modId}:block/${fileName}",
+                      "y": 90
+                    },
+                    "facing=south": {
+                      "model": "${modId}:block/${fileName}",
+                      "y": 180
+                    },
+                    "facing=west": {
+                      "model": "${modId}:block/${fileName}",
+                      "y": 270
+                    }
+                }
+            }
+            """.trimIndent()
+
+            File(blockStateFolder, "$fileName.json").writeText(jsonContent)
+
+
+
+            println("Created JSON files for: ${fileName}")
         }
     else println("No PNG files found in the folder.")
 }
